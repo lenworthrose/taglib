@@ -34,7 +34,11 @@
 #include <bitset>
 #include <cstdio>
 #include <cstdarg>
+#include <stdarg.h>
+#include <cstring>
+#include <string.h>
 
+using namespace std;
 using namespace TagLib;
 
 namespace
@@ -56,7 +60,7 @@ namespace
 
 #else
 
-    // Be careful. May cause a buffer overflow.  
+    // Be careful. May cause a buffer overflow.
     vsprintf(buf, fmt, args);
 
 #endif
@@ -75,7 +79,7 @@ namespace TagLib
   void debug(const String &s)
   {
 #if !defined(NDEBUG) || defined(TRACE_IN_RELEASE)
-  
+
     debugListener->printMessage("TagLib: " + s + "\n");
 
 #endif
@@ -85,10 +89,10 @@ namespace TagLib
   {
 #if !defined(NDEBUG) || defined(TRACE_IN_RELEASE)
 
-    for(size_t i = 0; i < v.size(); ++i) 
+    for(size_t i = 0; i < v.size(); ++i)
     {
       std::string bits = std::bitset<8>(v[i]).to_string();
-      String msg = format("*** [%d] - char '%c' - int %d, 0x%02x, 0b%s\n", 
+      String msg = format("*** [%d] - char '%c' - int %d, 0x%02x, 0b%s\n",
         i, v[i], v[i], v[i], bits.c_str());
 
       debugListener->printMessage(msg);

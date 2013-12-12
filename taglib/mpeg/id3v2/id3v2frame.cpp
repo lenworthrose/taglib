@@ -31,6 +31,7 @@
 #include <zlib.h>
 #endif
 
+#include <cstddef>
 #include <bitset>
 
 #include <tdebug.h>

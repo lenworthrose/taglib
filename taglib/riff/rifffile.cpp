@@ -28,10 +28,12 @@
 #include <tstring.h>
 
 #include "rifffile.h"
+#include <cstddef>
 #include <algorithm>
 #include <vector>
 
 using namespace TagLib;
+using std::size_t;
 
 struct Chunk
 {

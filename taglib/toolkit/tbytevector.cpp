@@ -36,6 +36,7 @@
 #include <tdebug.h>
 #include "trefcounter.h"
 #include "tutils.h"
+#include <memory.h>
 
 #include "tbytevector.h"
 
@@ -47,6 +48,8 @@
 // http://www.informit.com/isapi/product_id~{9C84DAB4-FE6E-49C5-BB0A-FB50331233EA}/content/index.asp
 
 #define DATA(x) (&(x->data->data[0]))
+
+using namespace std;
 
 namespace TagLib {
 
@@ -99,7 +102,7 @@ static const uint crcTable[256] = {
 };
 
 /*!
-  * A templatized straightforward find that works with the types 
+  * A templatized straightforward find that works with the types
   * std::vector<char>::iterator and std::vector<char>::reverse_iterator.
   */
 template <class TIterator>
@@ -125,7 +128,7 @@ int findChar(
 }
 
 /*!
-  * A templatized KMP find that works with the types 
+  * A templatized KMP find that works with the types
   * std::vector<char>::iterator and std::vector<char>::reverse_iterator.
   */
 template <class TIterator>
@@ -212,12 +215,12 @@ T toNumber(const ByteVector &v, size_t offset, bool mostSignificantByteFirst)
   static const bool isBigEndian = (Utils::SystemByteOrder == Utils::BigEndian);
   const bool swap = (mostSignificantByteFirst != isBigEndian);
 
-  if(offset + sizeof(T) > v.size()) 
+  if(offset + sizeof(T) > v.size())
     return toNumber<T>(v, offset, v.size() - offset, mostSignificantByteFirst);
 
   // Uses memcpy instead of reinterpret_cast to avoid an alignment exception.
   T tmp;
-  ::memcpy(&tmp, v.data() + offset, sizeof(T));
+  memcpy(&tmp, v.data() + offset, sizeof(T));
 
   if(swap)
     return Utils::byteSwap(tmp);
@@ -244,8 +247,8 @@ public:
   {
   }
 
-  DataPrivate(const std::vector<char> &v, uint offset, uint length) 
-    : data(v.begin() + offset, v.begin() + offset + length) 
+  DataPrivate(const std::vector<char> &v, uint offset, uint length)
+    : data(v.begin() + offset, v.begin() + offset + length)
   {
   }
 
@@ -255,8 +258,8 @@ public:
   {
   }
 
-  DataPrivate(uint len, char c) 
-    : data(len, c) 
+  DataPrivate(uint len, char c)
+    : data(len, c)
   {
   }
 
@@ -266,11 +269,11 @@ public:
 class ByteVector::ByteVectorPrivate : public RefCounter
 {
 public:
-  ByteVectorPrivate() 
+  ByteVectorPrivate()
     : RefCounter()
     , data(new DataPrivate())
     , offset(0)
-    , length(0) 
+    , length(0)
   {
   }
 
@@ -291,7 +294,7 @@ public:
   {
   }
 
-  ByteVectorPrivate(uint l, char c) 
+  ByteVectorPrivate(uint l, char c)
     : RefCounter()
     , data(new DataPrivate(l, c))
     , offset(0)
@@ -299,14 +302,14 @@ public:
   {
   }
 
-  ByteVectorPrivate(const char *s, uint l) 
+  ByteVectorPrivate(const char *s, uint l)
     : RefCounter()
     , data(new DataPrivate(s, s + l))
     , offset(0)
     , length(l)
   {
   }
-  
+
   void detach()
   {
     if(data->count() > 1) {
@@ -350,7 +353,7 @@ ByteVector ByteVector::null;
 ByteVector ByteVector::fromCString(const char *s, uint length)
 {
   if(length == 0xffffffff)
-    return ByteVector(s, ::strlen(s));
+    return ByteVector(s, strlen(s));
   else
     return ByteVector(s, length);
 }
@@ -384,7 +387,7 @@ ByteVector::ByteVector(uint size, char value)
 {
 }
 
-ByteVector::ByteVector(const ByteVector &v) 
+ByteVector::ByteVector(const ByteVector &v)
   : d(v.d)
 {
   d->ref();
@@ -406,7 +409,7 @@ ByteVector::ByteVector(const char *data, uint length)
 }
 
 ByteVector::ByteVector(const char *data)
-  : d(new ByteVectorPrivate(data, ::strlen(data)))
+  : d(new ByteVectorPrivate(data, strlen(data)))
 {
 }
 
@@ -487,10 +490,10 @@ bool ByteVector::containsAt(const ByteVector &pattern, uint offset, uint pattern
 
   // do some sanity checking -- all of these things are needed for the search to be valid
   const uint compareLength = patternLength - patternOffset;
-  if(offset + compareLength > size() || patternOffset >= pattern.size() || patternLength == 0)    
+  if(offset + compareLength > size() || patternOffset >= pattern.size() || patternLength == 0)
     return false;
-  
-  return (::memcmp(data() + offset, pattern.data() + patternOffset, compareLength) == 0);
+
+  return (memcmp(data() + offset, pattern.data() + patternOffset, compareLength) == 0);
 }
 
 bool ByteVector::startsWith(const ByteVector &pattern) const
@@ -517,7 +520,7 @@ ByteVector &ByteVector::replace(const ByteVector &pattern, const ByteVector &wit
     detach();
     offset = find(pattern);
     while(offset >= 0) {
-      ::memcpy(data() + offset, with.data(), withSize);
+      memcpy(data() + offset, with.data(), withSize);
       offset = find(pattern, offset + withSize);
     }
     return *this;
@@ -548,13 +551,13 @@ ByteVector &ByteVector::replace(const ByteVector &pattern, const ByteVector &wit
   for(;;) {
     int next = find(pattern, offset);
     if(next < 0) {
-      ::memcpy(target, source + offset, size() - offset);
+      memcpy(target, source + offset, size() - offset);
       break;
     }
     int chunkSize = next - offset;
-    ::memcpy(target, source + offset, chunkSize);
+    memcpy(target, source + offset, chunkSize);
     target += chunkSize;
-    ::memcpy(target, with.data(), withSize);
+    memcpy(target, with.data(), withSize);
     target += withSize;
     offset += chunkSize + patternSize;
   }
@@ -594,7 +597,7 @@ ByteVector &ByteVector::append(const ByteVector &v)
 
     uint originalSize = size();
     resize(originalSize + v.size());
-    ::memcpy(data() + originalSize, v.data(), v.size());
+    memcpy(data() + originalSize, v.data(), v.size());
   }
 
   return *this;
@@ -745,7 +748,7 @@ bool ByteVector::operator==(const ByteVector &v) const
   if(size() != v.size())
     return false;
 
-  return (::memcmp(data(), v.data(), size()) == 0);
+  return (memcmp(data(), v.data(), size()) == 0);
 }
 
 bool ByteVector::operator!=(const ByteVector &v) const
@@ -755,10 +758,10 @@ bool ByteVector::operator!=(const ByteVector &v) const
 
 bool ByteVector::operator==(const char *s) const
 {
-  if(size() != ::strlen(s))
+  if(size() != strlen(s))
     return false;
 
-  return (::memcmp(data(), s, size()) == 0);
+  return (memcmp(data(), s, size()) == 0);
 }
 
 bool ByteVector::operator!=(const char *s) const
@@ -768,7 +771,7 @@ bool ByteVector::operator!=(const char *s) const
 
 bool ByteVector::operator<(const ByteVector &v) const
 {
-  const int result = ::memcmp(data(), v.data(), std::min(size(), v.size()));
+  const int result = memcmp(data(), v.data(), std::min(size(), v.size()));
   if(result != 0)
     return result < 0;
   else

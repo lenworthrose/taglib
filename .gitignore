@@ -21,6 +21,8 @@ CMakeFiles/
 /tests/Testing
 /taglib_config.h
 /taglib-config
+/taglib/taglib.a
+/bindings/c/tablig_c.a
 /bindings/c/taglib_c.pc
 /bindings/c/Debug
 /bindings/c/MinSizeRel

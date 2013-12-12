@@ -293,7 +293,7 @@ set(toolkit_SRCS
   toolkit/tpropertymap.cpp
   toolkit/trefcounter.cpp
   toolkit/tdebuglistener.cpp
-  toolkit/unicode.cpp
+  toolkit/tunicode.cpp
 )
 
 set(tag_LIB_SRCS
